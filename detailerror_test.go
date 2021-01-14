@@ -1,4 +1,4 @@
-package internal
+package errfmt
 
 import (
 	"errors"
@@ -10,72 +10,72 @@ import (
 
 func TestDetailErrorFormat(t *testing.T) {
 	nested := &DetailError{
-		msg:    `reading "file"`,
-		detail: `cmd/prog/reader.go:122`,
-		err: &DetailError{
-			msg:    "parsing line 23",
-			detail: "iff x > 3 {\n\tcmd/prog/parser.go:85",
-			err: &DetailError{
-				msg:    "syntax error",
-				detail: "cmd/prog/parser.go:214",
+		Msg:    `reading "file"`,
+		Detail: `cmd/prog/reader.go:122`,
+		Err: &DetailError{
+			Msg:    "parsing line 23",
+			Detail: "iff x > 3 {\n\tcmd/prog/parser.go:85",
+			Err: &DetailError{
+				Msg:    "syntax error",
+				Detail: "cmd/prog/parser.go:214",
 			},
 		},
 	}
 	for _, test := range []struct {
-		err    error
+		Err    error
 		format string
 		want   string
 	}{
 		{
-			err:    errors.New("x"),
+			Err:    errors.New("x"),
 			format: "%v",
 			want:   `x`,
 		},
 		{
-			err:    errors.New("x"),
+			Err:    errors.New("x"),
 			format: "%+v",
 			want:   `x`,
 		},
 		{
-			err:    &DetailError{msg: "m"},
+			Err:    &DetailError{Msg: "m"},
 			format: "%v",
 			want:   `m`,
 		},
 		{
-			err:    &DetailError{msg: "m"},
+			Err:    &DetailError{Msg: "m"},
 			format: "%+v",
 			want:   "m\n",
 		},
 		{
-			err:    &DetailError{msg: "m", detail: "d\ne"},
+			Err:    &DetailError{Msg: "m", Detail: "d\ne"},
 			format: "%v",
 			want:   "m",
 		},
 		{
-			err:    &DetailError{msg: "m", detail: "d\ne"},
+			Err:    &DetailError{Msg: "m", Detail: "d\ne"},
 			format: "%s",
 			want:   "m",
 		},
 		{
-			err:    &DetailError{msg: "m", detail: "d\ne"},
+			Err:    &DetailError{Msg: "m", Detail: "d\ne"},
 			format: "%+v",
 			want:   "m\n\td\ne\n",
 		},
 		{
-			err:    &DetailError{msg: "m", detail: "d", err: io.ErrUnexpectedEOF},
+			Err:    &DetailError{Msg: "m", Detail: "d", Err: io.ErrUnexpectedEOF},
 			format: "%+v",
 			want:   "m\n\td\nunexpected EOF\n",
 		},
 		{
-			err:    &os.PathError{Op: "op", Path: "path", Err: os.ErrNotExist},
+			Err:    &os.PathError{Op: "op", Path: "path", Err: os.ErrNotExist},
 			format: "%v",
 			want:   "op path: file does not exist",
 		},
 		{
-			err: &DetailError{
-				msg:    "m",
-				detail: "d",
-				err: &os.PathError{
+			Err: &DetailError{
+				Msg:    "m",
+				Detail: "d",
+				Err: &os.PathError{
 					Op:   "op",
 					Path: "path",
 					Err:  os.ErrNotExist,
@@ -85,12 +85,12 @@ func TestDetailErrorFormat(t *testing.T) {
 			want:   "m\n\td\nop path: file does not exist\n",
 		},
 		{
-			err:    nested,
+			Err:    nested,
 			format: "%v",
 			want:   `reading "file": parsing line 23: syntax error`,
 		},
 		{
-			err:    nested,
+			Err:    nested,
 			format: "%+v",
 			want: `reading "file"
 	cmd/prog/reader.go:122
@@ -102,29 +102,29 @@ syntax error
 `,
 		},
 		{
-			err:    &DetailError{msg: "m"},
+			Err:    &DetailError{Msg: "m"},
 			format: "%5s",
 			want:   "    m",
 		},
 		{
-			err:    &DetailError{msg: "m"},
+			Err:    &DetailError{Msg: "m"},
 			format: "%X",
 			want:   "6D",
 		},
 		{
-			err:    io.ErrUnexpectedEOF,
+			Err:    io.ErrUnexpectedEOF,
 			format: "%+15v",
 			want:   " unexpected EOF",
 		},
 		{
-			err:    &DetailError{msg: "m", err: io.ErrUnexpectedEOF},
+			Err:    &DetailError{Msg: "m", Err: io.ErrUnexpectedEOF},
 			format: "%+15v",
 			want:   "m\n unexpected EOF\n",
 		},
 	} {
-		got := fmt.Sprintf(test.format, test.err)
+		got := fmt.Sprintf(test.format, test.Err)
 		if got != test.want {
-			t.Errorf("%q on %#v:\ngot  %q\nwant %q", test.format, test.err, got, test.want)
+			t.Errorf("%q on %#v:\ngot  %q\nwant %q", test.format, test.Err, got, test.want)
 		}
 	}
 }

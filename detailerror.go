@@ -1,4 +1,4 @@
-package internal
+package errfmt
 
 import (
 	"fmt"
@@ -7,17 +7,17 @@ import (
 )
 
 type DetailError struct {
-	msg, detail string
-	err         error
+	Msg, Detail string
+	Err         error
 }
 
-func (e *DetailError) Unwrap() error { return e.err }
+func (e *DetailError) Unwrap() error { return e.Err }
 
 func (e *DetailError) Error() string {
-	if e.err == nil {
-		return e.msg
+	if e.Err == nil {
+		return e.Msg
 	}
-	return e.msg + ": " + e.err.Error()
+	return e.Msg + ": " + e.Err.Error()
 }
 
 func (e *DetailError) Format(s fmt.State, c rune) {
@@ -30,16 +30,16 @@ func (e *DetailError) Format(s fmt.State, c rune) {
 		fmt.Fprintf(s, spec(s, c), e.Error())
 		return
 	}
-	fmt.Fprintln(s, e.msg)
-	if e.detail != "" {
+	fmt.Fprintln(s, e.Msg)
+	if e.Detail != "" {
 		io.WriteString(s, "\t")
-		fmt.Fprintln(s, e.detail)
+		fmt.Fprintln(s, e.Detail)
 	}
-	if e.err != nil {
-		if ferr, ok := e.err.(fmt.Formatter); ok {
-			ferr.Format(s, c)
+	if e.Err != nil {
+		if fErr, ok := e.Err.(fmt.Formatter); ok {
+			fErr.Format(s, c)
 		} else {
-			fmt.Fprintf(s, spec(s, c), e.err)
+			fmt.Fprintf(s, spec(s, c), e.Err)
 			io.WriteString(s, "\n")
 		}
 	}
